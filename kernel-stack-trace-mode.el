@@ -1,5 +1,5 @@
 (setq kst/keywords
-      '(("^\\[[. [:digit:]]+\\] \\[<[[:xdigit:]]+>\\]" . font-lock-constant-face)))
+      '(("\\[<[[:xdigit:]]+>\\]" . font-lock-constant-face)))
 
 (defalias 'kst/read-file-name (if (fboundp 'ido-read-file-name)
 			      'ido-read-file-name
@@ -7,17 +7,32 @@
   "Function to use to find files. Uses `ido-read-file-name' if it
 exists, else `read-file-name'")
 
-(defun kst/find-next-addr ()
-  "Places point on the next address in the stack trace"
+(defun kst/find-next-leading-addr ()
+  "Places point on the next address that is the first address on
+the line where it is located in the stack trace"
   (interactive)
   (search-forward-regexp "^\\[[. [:digit:]]+\\] \\[<[[:xdigit:]]+>\\]")
   (search-backward "<")
   (forward-char))
 
+(defun kst/find-next-addr ()
+  "Places point on the next address in the stack trace"
+  (interactive)
+  (search-forward-regexp "\\[<[[:xdigit:]]+>\\]")
+  (search-backward "<")
+  (forward-char))
+
+(defun kst/find-prev-leading-addr ()
+  "Places point on the previous address that is the first address
+on the line where it is located in the stack trace"
+  (interactive)
+  (search-backward-regexp "^\\[[. [:digit:]]+\\] \\[<[[:xdigit:]]+>\\]")
+  (search-forward "<"))
+
 (defun kst/find-prev-addr ()
   "Places point on the previous address in the stack trace"
   (interactive)
-  (search-backward-regexp "^\\[[. [:digit:]]+\\] \\[<[[:xdigit:]]+>\\]")
+  (search-backward-regexp "\\[<[[:xdigit:]]+>\\]")
   (search-forward "<"))
 
 (defun kst/next-error (&optional argp reset)
@@ -32,7 +47,7 @@ exists, else `read-file-name'")
 	(next-error-find-buffer nil nil
 				(lambda ()
 				  (eq major-mode 'kernel-stack-trace-mode))))
-    (kst/find-next-addr)
+    (kst/find-next-leading-addr)
     (kst/visit-current-addr)))
 
 (defun kst/get-current-elf ()
@@ -74,8 +89,10 @@ directly."
 
 (when (not kernel-stack-trace-mode-map)
   (setq kernel-stack-trace-mode-map (make-sparse-keymap))
-  (define-key kernel-stack-trace-mode-map (kbd "n") 'kst/find-next-addr)
-  (define-key kernel-stack-trace-mode-map (kbd "p") 'kst/find-prev-addr)
+  (define-key kernel-stack-trace-mode-map (kbd "n") 'kst/find-next-leading-addr)
+  (define-key kernel-stack-trace-mode-map (kbd "p") 'kst/find-prev-leading-addr)
+  (define-key kernel-stack-trace-mode-map (kbd "<tab>") 'kst/find-next-addr)
+  (define-key kernel-stack-trace-mode-map (kbd "<backtab>") 'kst/find-prev-addr)
   (define-key kernel-stack-trace-mode-map (kbd "q") 'bury-buffer)
   (define-key kernel-stack-trace-mode-map (kbd "<return>") 'kst/visit-current-addr))
 
