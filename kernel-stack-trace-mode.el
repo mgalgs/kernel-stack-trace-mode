@@ -35,13 +35,21 @@ exists, else `read-file-name'")
     (kst/find-next-addr)
     (kst/visit-current-addr)))
 
-(defun kst/get-current-vmlinux ()
-  "Gets the value of `kst/current-vmlinux' if not nil, else asks
+(defun kst/get-current-elf ()
+  "Gets the value of `kst/current-elf' if not nil, else asks
   the user to pick a location for the current vmlinux."
   (interactive)
-  (if kst/current-vmlinux
-      kst/current-vmlinux
-    (setq kst/current-vmlinux (kst/read-file-name "Select a vmlinux: "))))
+  (if kst/current-elf
+      kst/current-elf
+    (kst/set-current-elf)))
+
+(defun kst/set-current-elf ()
+  "Sets and returns `kst/current-elf' using
+`kst/read-file-name'. TODO: optional arg to just set the elf
+directly."
+  (interactive)
+  (setq kst/current-elf (kst/read-file-name "Select an elf: "))
+  kst/current-elf)
 
 (defun kst/visit-current-addr ()
   "Visits the address at point by invoking addr2line and jumping
@@ -49,7 +57,7 @@ exists, else `read-file-name'")
   (interactive)
   (let* ((addr (thing-at-point 'word))
 	 (output (shell-command-to-string (format "addr2line -e %s %s"
-						  (kst/get-current-vmlinux)
+						  (kst/get-current-elf)
 						  addr)))
 	 (filename (substring output
 			      0
@@ -75,7 +83,7 @@ exists, else `read-file-name'")
   (setq font-lock-defaults '(kst/keywords))
   (setq mode-name "kst")
   (setq next-error-function 'kst/next-error)
-  (setq kst/current-vmlinux nil)
+  (setq kst/current-elf nil)
   (use-local-map kernel-stack-trace-mode-map))
 
 (provide 'kernel-stack-trace-mode)
