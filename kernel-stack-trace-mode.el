@@ -66,12 +66,11 @@ directly."
   (setq kst/current-elf (kst/read-file-name "Select an elf: "))
   kst/current-elf)
 
-(defun kst/visit-current-addr ()
-  "Visits the address at point by invoking addr2line and jumping
-  to the result"
+(defun kst/visit-addr (addr)
+  "Visits the specified address by invoking addr2line and jumping
+to the result"
   (interactive)
-  (let* ((addr (thing-at-point 'word))
-	 (output (shell-command-to-string (format "addr2line -e %s %s"
+  (let* ((output (shell-command-to-string (format "addr2line -e %s %s"
 						  (kst/get-current-elf)
 						  addr)))
 	 (filename (substring output
@@ -84,6 +83,11 @@ directly."
     (goto-line line-number)
     (recenter)
     (other-window 1)))
+
+(defun kst/visit-current-addr ()
+  "Visit the address at point with `kst/visit-addr'"
+  (interactive)
+  (kst/visit-addr (thing-at-point 'word)))
 
 (defvar kernel-stack-trace-mode-map nil "Keymap for kernel-stack-trace-mode")
 
