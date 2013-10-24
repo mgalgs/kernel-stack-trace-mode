@@ -95,10 +95,10 @@ to the result"
   (setq kernel-stack-trace-mode-map (make-sparse-keymap))
   (define-key kernel-stack-trace-mode-map (kbd "n") 'kst/find-next-leading-addr)
   (define-key kernel-stack-trace-mode-map (kbd "p") 'kst/find-prev-leading-addr)
-  (define-key kernel-stack-trace-mode-map (kbd "<tab>") 'kst/find-next-addr)
+  (define-key kernel-stack-trace-mode-map (kbd "TAB") 'kst/find-next-addr)
   (define-key kernel-stack-trace-mode-map (kbd "<backtab>") 'kst/find-prev-addr)
   (define-key kernel-stack-trace-mode-map (kbd "q") 'bury-buffer)
-  (define-key kernel-stack-trace-mode-map (kbd "<return>") 'kst/visit-current-addr))
+  (define-key kernel-stack-trace-mode-map (kbd "RET") 'kst/visit-current-addr))
 
 (define-derived-mode kernel-stack-trace-mode fundamental-mode
   (setq font-lock-defaults '(kst/keywords))
