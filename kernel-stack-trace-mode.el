@@ -66,10 +66,12 @@ directly."
   (setq kst/current-elf (kst/read-file-name "Select an elf: "))
   kst/current-elf)
 
-(defun kst/visit-addr (addr)
-  "Visits the specified address by invoking addr2line and jumping
-to the result"
-  (interactive)
+(defun kst/get-location-from-addr (addr)
+  "Returns the file and line number associated with the
+address. Returned in an alist of the format:
+
+    ((filename . blah)
+     (line-number . 42))"
   (let* ((output (shell-command-to-string (format "addr2line -e %s %s"
 						  (kst/get-current-elf)
 						  addr)))
@@ -79,6 +81,16 @@ to the result"
 	 (line-number (string-to-number (substring output
 						   (+ 1 (string-match-p ":" output))
 						   -1))))
+    `((filename . ,filename)
+      (line-number . ,line-number))))
+
+(defun kst/visit-addr (addr)
+  "Visits the specified address by invoking addr2line and jumping
+to the result"
+  (interactive)
+  (let* ((location-info (kst/get-location-from-addr addr))
+         (filename (cdr (assoc 'filename location-info)))
+         (line-number (cdr (assoc 'line-number location-info))))
     (find-file-other-window filename)
     (goto-line line-number)
     (recenter)
